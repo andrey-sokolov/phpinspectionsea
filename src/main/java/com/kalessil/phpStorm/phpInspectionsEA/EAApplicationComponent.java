@@ -6,6 +6,7 @@ import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.ui.LicensingFacade;
 import com.kalessil.phpStorm.phpInspectionsEA.utils.analytics.AnalyticsUtil;
 import com.wyday.turboactivate.TurboActivate;
 import com.wyday.turboactivate.TurboActivateException;
@@ -28,12 +29,15 @@ public class EAApplicationComponent implements ApplicationComponent {
     /* TODO: util */
     private void initLicensing() {
         final Application application = ApplicationManager.getApplication();
-        final boolean needsLicense    = !application.isEAP() && !application.isHeadlessEnvironment();
-        if (needsLicense) {
-            try {
-                limelm = new TurboActivate("2d65930359df9afb6f9a54.36732074");
-            } catch (TurboActivateException failure) {
-                // TODO: handle
+        if (!application.isEAP() && !application.isHeadlessEnvironment()) {
+            final LicensingFacade facade = LicensingFacade.getInstance();
+            final boolean isOssLicense   = facade != null && facade.getLicenseRestrictionsMessages().stream().anyMatch((s) -> s.contains("open source"));
+            if (!isOssLicense) {
+                try {
+                    limelm = new TurboActivate("2d65930359df9afb6f9a54.36732074");
+                } catch (TurboActivateException failure) {
+                    // TODO: handle
+                }
             }
         }
     }
