@@ -2,10 +2,13 @@ package com.kalessil.phpStorm.phpInspectionsEA;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.extensions.PluginId;
 import com.kalessil.phpStorm.phpInspectionsEA.utils.analytics.AnalyticsUtil;
+import com.wyday.turboactivate.TurboActivate;
+import com.wyday.turboactivate.TurboActivateException;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
@@ -15,16 +18,28 @@ import org.jetbrains.annotations.NotNull;
 public class EAApplicationComponent implements ApplicationComponent {
     private boolean updated;
     private boolean updateNotificationShown;
+    private TurboActivate limelm;
 
     @NotNull
     public static EAApplicationComponent getInstance() {
         return ApplicationManager.getApplication().getComponent(EAApplicationComponent.class);
     }
 
+    /* TODO: util */
+    private void initLicensing() {
+        final Application application = ApplicationManager.getApplication();
+        final boolean needsLicense    = !application.isEAP() && !application.isHeadlessEnvironment();
+        if (needsLicense) {
+            try {
+                limelm = new TurboActivate("2d65930359df9afb6f9a54.36732074");
+            } catch (TurboActivateException failure) {
+                // TODO: handle
+            }
+        }
+    }
+
     @Override
     public void initComponent() {
-        /* TODO: verify no licenses for ApplicationManager.getApplication().isEAP|isHeadlessEnvironment(); */
-
         IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.kalessil.phpStorm.phpInspectionsEA"));
         if (null == plugin) {
             return;
@@ -56,6 +71,8 @@ public class EAApplicationComponent implements ApplicationComponent {
         };
         appender.setName("ea-exceptions-tracker");
         Logger.getRootLogger().addAppender(appender);
+
+        this.initLicensing();
     }
 
     @Override
