@@ -23,6 +23,8 @@ public class EAApplicationComponent implements ApplicationComponent {
 
     @Override
     public void initComponent() {
+        /* TODO: verify no licenses for ApplicationManager.getApplication().isEAP|isHeadlessEnvironment(); */
+
         IdeaPluginDescriptor plugin = PluginManager.getPlugin(PluginId.getId("com.kalessil.phpStorm.phpInspectionsEA"));
         if (null == plugin) {
             return;
