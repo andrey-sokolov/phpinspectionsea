@@ -26,15 +26,19 @@ public class EAApplicationComponent implements ApplicationComponent {
         return ApplicationManager.getApplication().getComponent(EAApplicationComponent.class);
     }
 
-    /* TODO: util */
+    /* TODO: separate component */
     private void initLicensing() {
         final Application application = ApplicationManager.getApplication();
+        /* EAP and headless are not license for now */
         if (!application.isEAP() && !application.isHeadlessEnvironment()) {
             final LicensingFacade facade = LicensingFacade.getInstance();
             final boolean isOssLicense   = facade != null && facade.getLicenseRestrictionsMessages().stream().anyMatch((s) -> s.contains("open source"));
-            if (!isOssLicense) {
+            final boolean isTrialLicense = facade != null && facade.isEvaluationLicense();
+            /* OSS: supported us, hence for free; TRIAL: let's don't bother with un-needed movements for our trials */
+            if (!isOssLicense && !isTrialLicense) {
                 try {
                     limelm = new TurboActivate("2d65930359df9afb6f9a54.36732074");
+                    // facade.getLicensedToMessage() => Licensed to <Company> / <Developer>
                 } catch (TurboActivateException failure) {
                     // TODO: handle
                 }
